@@ -1,4 +1,4 @@
-# backend/main.py - FastAPI application that uses your services
+
 import os
 import asyncio
 from typing import Dict, Any
@@ -8,12 +8,10 @@ from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
-
-# Import your services (from the services.py you just created)
 from serviices import medical_chatbot
 from confiig import settings
 
-# Global variables for service initialization
+
 app_state = {}
 
 @asynccontextmanager
@@ -23,16 +21,14 @@ async def lifespan(app: FastAPI):
     print("🏥 Starting Clinical Diagnostics Chatbot...")
     print(f"Backend running on port {settings.backend_port}")
     
-    # Initialize services (they're already initialized in services.py)
     app_state["chatbot"] = medical_chatbot
     print("✅ Medical chatbot services initialized")
     
     yield
-    
-    # Shutdown
+  
     print("👋 Shutting down Clinical Diagnostics Chatbot...")
 
-# Create FastAPI app (based on search results pattern)
+
 app = FastAPI(
     title="Clinical Diagnostics Chatbot API",
     description="AI-powered medical diagnostics with RAG and conversation management",
@@ -61,7 +57,7 @@ class ChatRequest:
         if len(self.message) > 2000:
             raise ValueError("Message too long (max 2000 characters)")
 
-# API Endpoints
+
 @app.get("/")
 async def root():
     """Root endpoint - API info"""
@@ -84,7 +80,7 @@ async def chat_endpoint(request_data: dict):
     Based on search results pattern for chatbot endpoints
     """
     try:
-        # Validate request
+     
         chat_request = ChatRequest(request_data)
         chat_request.validate()
         
@@ -97,7 +93,7 @@ async def chat_endpoint(request_data: dict):
         if not result["success"]:
             raise HTTPException(status_code=500, detail=result.get("error", "Processing failed"))
         
-        # Return response (matching search results structure)
+        
         return {
             "success": True,
             "response": result["response"],
@@ -136,19 +132,18 @@ async def upload_document(
                 detail=f"Unsupported file type. Allowed: {settings.allowed_file_types}"
             )
         
-        # Check file size
         content = await file.read()
         if len(content) > settings.max_upload_size:
             raise HTTPException(status_code=400, detail="File too large")
         
-        # Save file
+    
         os.makedirs(settings.upload_dir, exist_ok=True)
         file_path = os.path.join(settings.upload_dir, f"{session_id}_{file.filename}")
         
         with open(file_path, "wb") as f:
             f.write(content)
         
-        # Process document
+       
         result = await medical_chatbot.doc_service.process_document(file_path, file_extension)
         
         if not result["success"]:
@@ -201,17 +196,15 @@ async def health_check():
     Health check endpoint
     Based on search results showing health check patterns
     """
-    try:
-        # Check service availability
+    t
         services_status = {}
         
-        # Check Groq API
+      
         if settings.groq_api_key:
             services_status["groq"] = "configured"
         else:
             services_status["groq"] = "not_configured"
         
-        # Check HuggingFace API  
         if settings.huggingface_api_token:
             services_status["huggingface"] = "configured"
         else:
@@ -270,7 +263,6 @@ async def internal_error_handler(request, exc):
         content={"error": "Internal server error", "message": "Please try again later"}
     )
 
-# Development server runner
 if __name__ == "__main__":
     print("🚀 Starting Clinical Diagnostics Chatbot API...")
     print(f"🌐 API will be available at: http://localhost:{settings.backend_port}")
