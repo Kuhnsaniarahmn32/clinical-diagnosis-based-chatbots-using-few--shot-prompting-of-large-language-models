@@ -1,4 +1,4 @@
-# backend/config.py - Simplified Version
+BACKEND# backend/config.py - Simplified Version
 import os
 from typing import List
 from pydantic_settings import BaseSettings
