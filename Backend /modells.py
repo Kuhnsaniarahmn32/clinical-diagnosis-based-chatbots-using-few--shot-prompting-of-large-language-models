@@ -1,10 +1,10 @@
-# backend/models.py
+
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
 
-# Enums for structured data
+
 class UrgencyLevel(str, Enum):
     """Medical urgency levels"""
     EMERGENCY = "emergency"
@@ -24,7 +24,6 @@ class AnalysisType(str, Enum):
     DOCUMENT_ANALYSIS = "document_analysis"
     GENERAL_QUERY = "general_query"
 
-# Request Models (Data coming FROM frontend TO backend)
 class ChatRequest(BaseModel):
     """Request model for chat/symptom analysis"""
     message: str = Field(..., min_length=5, max_length=2000, description="User's message or symptoms")
@@ -45,7 +44,7 @@ class DocumentUploadRequest(BaseModel):
     file_type: FileType = Field(..., description="Type of uploaded file")
     analysis_question: Optional[str] = Field(None, description="Specific question about the document")
 
-# Response Models (Data going FROM backend TO frontend)
+
 class MedicalAnalysis(BaseModel):
     """Structured medical analysis"""
     possible_conditions: List[str] = Field(default_factory=list, description="List of possible medical conditions")
@@ -68,7 +67,7 @@ class ChatResponse(BaseModel):
     
     @validator('confidence_score')
     def validate_confidence(cls, v):
-        return round(v, 2)  # Round to 2 decimal places
+        return round(v, 2)
 
 class DocumentAnalysis(BaseModel):
     """Structured document analysis"""
@@ -106,7 +105,7 @@ class SessionContext(BaseModel):
     medical_summary: str = Field("", description="Summary of medical discussion")
     last_activity: datetime = Field(default_factory=datetime.now, description="Last activity timestamp")
 
-# Error Models
+
 class ErrorDetail(BaseModel):
     """Detailed error information"""
     error_code: str = Field(..., description="Error code")
@@ -121,7 +120,7 @@ class ErrorResponse(BaseModel):
     session_id: Optional[str] = Field(None, description="Session identifier if available")
     suggested_action: str = Field("", description="Suggested action for user")
 
-# Health Check Models
+
 class ServiceStatus(BaseModel):
     """Individual service status"""
     service_name: str = Field(..., description="Name of the service")
@@ -136,7 +135,6 @@ class HealthCheckResponse(BaseModel):
     services: List[ServiceStatus] = Field(..., description="Individual service statuses")
     timestamp: datetime = Field(default_factory=datetime.now, description="Health check timestamp")
 
-# Medical Knowledge Models
 class MedicalSource(BaseModel):
     """Medical knowledge source"""
     source_id: str = Field(..., description="Unique source identifier")
@@ -145,7 +143,6 @@ class MedicalSource(BaseModel):
     confidence: float = Field(0.0, ge=0.0, le=1.0, description="Confidence in source")
     relevance_score: float = Field(0.0, ge=0.0, le=1.0, description="Relevance to query")
 
-# API Configuration Models
 class APIUsage(BaseModel):
     """API usage tracking"""
     api_provider: str = Field(..., description="API provider (groq, huggingface)")
@@ -175,18 +172,18 @@ def create_success_response(message: str, urgency: UrgencyLevel = UrgencyLevel.M
         disclaimer="This analysis is for informational purposes only. Always consult healthcare professionals for medical advice."
     )
 
-# Model examples for testing
+
 if __name__ == "__main__":
     print("🏥 Clinical Diagnostics Models Test")
     
-    # Test ChatRequest
+ 
     test_request = ChatRequest(
         message="I have a headache and fever",
         session_id="test123"
     )
     print(f"✅ Chat Request: {test_request.message}")
     
-    # Test ChatResponse
+  
     test_response = create_success_response(
         message="Based on your symptoms, you may have a viral infection.",
         urgency=UrgencyLevel.LOW,
@@ -194,7 +191,7 @@ if __name__ == "__main__":
     )
     print(f"✅ Chat Response: {test_response.urgency_level}")
     
-    # Test Error Response
+   
     test_error = create_error_response(
         error_code="VALIDATION_ERROR",
         error_message="Message is too short",
