@@ -1,4 +1,4 @@
-# backend/services.py - Fixed and enhanced version
+
 import os
 import re
 import json
@@ -47,10 +47,10 @@ class MedicalRAGService:
     
     def get_context_for_query(self, query: str) -> Dict[str, Any]:
         """Get relevant medical context for a query (main RAG function)"""
-        # Extract symptoms from query
+      
         extracted_symptoms = self._extract_symptoms(query)
         
-        # Get relevant medical knowledge
+     
         relevant_knowledge = []
         possible_conditions = []
         
@@ -64,7 +64,7 @@ class MedicalRAGService:
         return {
             "extracted_symptoms": extracted_symptoms,
             "relevant_knowledge": relevant_knowledge,
-            "possible_conditions": list(set(possible_conditions)),  # Remove duplicates
+            "possible_conditions": list(set(possible_conditions)),
             "emergency_detected": any(is_emergency_symptom(symptom) for symptom in extracted_symptoms)
         }
     
@@ -73,9 +73,8 @@ class MedicalRAGService:
         text_lower = text.lower()
         extracted = []
         
-        # Check for symptom keywords
         for symptom in self.medical_knowledge.keys():
-            # Simple keyword matching
+           
             symptom_words = symptom.replace("_", " ").split()
             if all(word in text_lower for word in symptom_words):
                 extracted.append(symptom)
@@ -152,12 +151,10 @@ class HuggingFaceService:
             examples_text += f"Patient: {example['input']}\n"
             examples_text += f"Medical Analysis: {example['output']}\n\n"
         
-        # Add context if available
         context_text = ""
         if context and context.get("relevant_knowledge"):
             context_text = f"Relevant Medical Knowledge: {', '.join(context['relevant_knowledge'])}\n\n"
         
-        # Complete few-shot prompt
         full_prompt = f"""You are a medical AI assistant. Analyze patient symptoms using the examples below as guidance.
 
 {examples_text}
@@ -211,7 +208,7 @@ class GroqService:
             return {"success": False, "error": "Groq API key not configured"}
         
         try:
-            # Create few-shot conversation messages
+           
             messages = self._create_few_shot_messages(prompt, context)
             
             response = self.client.chat.completions.create(
@@ -259,14 +256,13 @@ Follow this format: provide Analysis, Recommendations, and Urgency level."""
             }
         ]
         
-        # Add context if available
+     
         if context and context.get("relevant_knowledge"):
             messages.append({
                 "role": "system", 
                 "content": f"Additional medical context: {', '.join(context['relevant_knowledge'])}"
             })
         
-        # Add user query
         messages.append({
             "role": "user",
             "content": user_query
@@ -293,7 +289,7 @@ class DocumentProcessingService:
             else:
                 return {"success": False, "error": f"Unsupported file type: {file_type}"}
             
-            # Extract medical information
+          
             medical_info = self._extract_medical_info(text)
             
             return {
@@ -330,11 +326,10 @@ class DocumentProcessingService:
             "dates": []
         }
         
-        # Simple pattern matching for medical entities
-        # Medications (ending in common suffixes)
+    
         med_patterns = [
             r'\b\w+cillin\b', r'\b\w+mycin\b', r'\b\w+pril\b',
-            r'\baspirin\b', r'\bibuprofen\b', r'\bmetformin\b'  # Fixed typo: was "basipirin"
+            r'\baspirin\b', r'\bibuprofen\b', r'\bmetformin\b'  
         ]
         for pattern in med_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
@@ -363,7 +358,7 @@ class ContextService:
     """
     
     def __init__(self):
-        self.sessions = {}  # In-memory storage (use Redis in production)
+        self.sessions = {}  
     
     def create_session(self, session_id: str) -> Dict[str, Any]:
         """Create new conversation session"""
@@ -376,7 +371,7 @@ class ContextService:
                 "urgency_level": "normal"
             }
         }
-        return self.sessions[session_id]  # Fixed indentation
+        return self.sessions[session_id] 
     
     def add_message(self, session_id: str, user_message: str, ai_response: str, metadata: Dict = None):
         """Add message to conversation history"""
@@ -391,8 +386,7 @@ class ContextService:
         }
         
         self.sessions[session_id]["messages"].append(message_data)
-        
-        # Update medical context
+    
         if metadata and "symptoms" in metadata:
             self.sessions[session_id]["medical_context"]["symptoms_mentioned"].extend(metadata["symptoms"])
     
@@ -428,39 +422,39 @@ class MedicalChatbotService:
     async def process_medical_query(self, message: str, session_id: str = "default") -> Dict[str, Any]:
         """Main method to process medical queries (this is what your API will call)"""
         try:
-            # Check for emergency
+         
             if is_emergency_symptom(message):
                 return {
                     "success": True,
                     "response": settings.emergency_message,
                     "urgency_level": "emergency",
                     "emergency": True,
-                    "session_id": session_id,  # Added session_id
+                    "session_id": session_id, 
                     "disclaimer": "SEEK IMMEDIATE MEDICAL ATTENTION!"
                 }
             
-            # Get RAG context
+          
             rag_context = self.rag_service.get_context_for_query(message)
             
-            # Get conversation context
+         
             conversation_context = self.context_service.get_context(session_id)
             
-            # Try Groq first (faster), fallback to HuggingFace
+          
             if self.groq_service.client:
                 ai_response = await self.groq_service.generate_medical_response(message, rag_context)
             else:
                 ai_response = await self.hf_service.generate_medical_response(message, rag_context)
             
             if not ai_response["success"]:
-                # Fallback response
+               
                 response_text = self._create_fallback_response(rag_context)
             else:
                 response_text = ai_response["response"]
             
-            # Add disclaimer
+       
             final_response = f"{response_text}\n\n{settings.medical_disclaimer}"
             
-            # Save to context
+         
             self.context_service.add_message(
                 session_id, message, final_response, 
                 {"symptoms": rag_context["extracted_symptoms"]}
@@ -493,7 +487,7 @@ class MedicalChatbotService:
         else:
             return "I understand you have health concerns. Please describe your symptoms in more detail or consult with a healthcare professional for proper medical advice."
 
-# Initialize global service instance
+
 medical_chatbot = MedicalChatbotService()
 
 # Test function
@@ -508,5 +502,5 @@ if __name__ == "__main__":
         print(f"✅ Response: {result['response'][:100]}...")
         print(f"Urgency: {result['urgency_level']}")
         
-    # Run test
+  
     asyncio.run(test_service())
