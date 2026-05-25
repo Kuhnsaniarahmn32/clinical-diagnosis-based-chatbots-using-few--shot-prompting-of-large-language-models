@@ -17,8 +17,7 @@ clinical_diagnostics_chatbot/
 
 ├── 📁 backend/
 
-│ ├── main.py
-# FastAPI application(High-performance API framework,Fast AI inference (free tier))
+│ ├── main.py # FastAPI application(High-performance API framework,Fast AI inference )
 
 │ ├── services.py # Core medical AI services
 
