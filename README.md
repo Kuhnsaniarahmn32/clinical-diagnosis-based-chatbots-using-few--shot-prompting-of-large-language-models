@@ -17,18 +17,31 @@ clinical_diagnostics_chatbot/
 
 ├── 📁 backend/
 
-│ ├── main.py # FastAPI application(High-performance API framework,Fast AI inference (free tier))
+│ ├── main.py
+# FastAPI application(High-performance API framework,Fast AI inference (free tier))
+
 │ ├── services.py # Core medical AI services
+
 │ ├── config.py # Configuration management
+
 │ └── requirements.txt # Backend dependencies
+
 ├── 📁 frontend/
+
 │ ├── app.py # Streamlit application
+
 │ └── requirements.txt # Frontend dependencies
+
 ├── 📁 data/
+
 │ ├── 📁 documents/ # Medical knowledge base
+
 │ └── 📁 uploads/ # User uploaded documents
+
 ├── .env # Environment variables
+
 ├── .gitignore # Git ignore rules
+
 └── README.md # This file
 
 3. Set Up Virtual Environment
